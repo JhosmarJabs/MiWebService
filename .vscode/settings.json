@@ -6,7 +6,7 @@
             "port": 5432,
             "driver": "PostgreSQL",
             "name": "Josmar",
-            "database": "bdJosmarEleven",
+            "database": "bd_jabs_eleven",
             "username": "postgres"
         }
     ]

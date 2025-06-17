@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MiWebService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bed2fe5a9294afa01c895a602647a11581ff08de")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+23c8898e45e6c1cdd741bdb46d73909f10a2218d")]
 [assembly: System.Reflection.AssemblyProductAttribute("MiWebService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MiWebService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

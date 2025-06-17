@@ -132,8 +132,8 @@ namespace MiWebService.Controllers
                     command.Parameters.AddWithValue("apaterno", persona.APaterno);
                     command.Parameters.AddWithValue("amaterno", persona.AMaterno);
                     command.Parameters.AddWithValue("telefono", persona.Telefono);
-                    command.Parameters.AddWithValue("correo", persona.Correo ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("nametag", persona.NameTag ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("correo", persona.Correo);
+                    command.Parameters.AddWithValue("nametag", persona.NameTag);
                     command.Parameters.AddWithValue("fechaNacimiento", persona.FechaNacimiento.Date);
                     command.Parameters.AddWithValue("empresaId", persona.EmpresaId);
                     command.Parameters.AddWithValue("fechaModificacion", fechaModificacion);
