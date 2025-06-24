@@ -7,3 +7,9 @@ obj/Debug/
 .vscode/
 
 Josmar.session.sql
+
+*.exe
+*.dll
+*.pdb
+
+appsettings.Development.json
