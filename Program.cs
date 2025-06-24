@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.SetIsOriginAllowed(origin =>
-            origin.StartsWith("http://localhost") ||
+        origin.StartsWith("http://localhost") ||
             origin.StartsWith("http://127.0.0.1") ||
             origin.StartsWith("http://192.168.15.135") ||
             origin.StartsWith("file://")

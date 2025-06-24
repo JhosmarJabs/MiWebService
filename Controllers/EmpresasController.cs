@@ -5,18 +5,19 @@ using MiWebService.Models;
 namespace MiWebService.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("MiWebService")]
     public class EmpresasController : ControllerBase
     {
         private readonly string _connectionString;
-        
-        public EmpresasController()
+
+        public EmpresasController(IConfiguration configuration)
         {
-            _connectionString = "Host=localhost;Database=bd_jabs_eleven;Username=postgres;Password=admin;Port=5432";
+            _connectionString = configuration.GetConnectionString("ConexionServidor");
         }
 
-        [HttpGet]
-        public IActionResult GetEmpresas()
+        [HttpPost]
+        [Route("GetEmpresas")]
+         public List<Empresa> GetEmpresas()
         {
             var empresas = new List<Empresa>();
 
@@ -44,8 +45,8 @@ namespace MiWebService.Controllers
                 }
                 connection.Close();
             }
-            
-            return Ok(empresas);
+
+            return empresas;
         }
     }
 }   

@@ -1,0 +1,14 @@
+# Carpetas de build
+bin/
+obj/
+obj/Debug/
+
+.vs/
+.vscode/
+
+# Configuración con datos sensibles
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+# Resto del .gitignore estándar...
