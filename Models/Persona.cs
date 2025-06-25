@@ -15,4 +15,5 @@ namespace MiWebService.Models
         public int EmpresaId { get; set; }
         public bool EnUso { get; set; }
     }
+
 }
