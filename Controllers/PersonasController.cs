@@ -10,6 +10,12 @@ namespace MiWebService.Controllers
     {
         private readonly Datos _datos;
 
+        public PersonasController(IConfiguration configuration)
+        {
+            string connectionString = configuration.GetConnectionString("ConexionServidor");
+            _datos = new Datos(connectionString);
+        }
+        
         [HttpPost]
         [Route("GetPersonas")]
         public List<Persona> GetPersonas(DateTime? dtFechaModificacion)
@@ -28,7 +34,6 @@ namespace MiWebService.Controllers
         [Route("UpdatePersona")]
         public int UpdatePersona([FromBody] Persona persona)
         {
-
             return _datos.UpdatePersona(persona);
         }
 
