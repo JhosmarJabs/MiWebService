@@ -15,12 +15,13 @@ namespace MiWebService.Controllers
             string connectionString = configuration.GetConnectionString("ConexionServidor");
             _datos = new Datos(connectionString);
         }
-        
+
         [HttpPost]
         [Route("GetPersonas")]
-        public List<Persona> GetPersonas(DateTime? dtFechaModificacion)
+        public List<Persona> GetPersonas([FromBody] GetPersonasRequest? FechaModificacion)
         {
-            return _datos.GetPersonas(dtFechaModificacion);
+            string fecha = FechaModificacion?.DtFechaModificacion ?? string.Empty;
+            return _datos.GetPersonas(fecha);
         }
 
         [HttpPost]

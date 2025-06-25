@@ -16,4 +16,8 @@ namespace MiWebService.Models
         public bool EnUso { get; set; }
     }
 
+    public class GetPersonasRequest
+    {
+        public string? DtFechaModificacion { get; set; }
+    }
 }

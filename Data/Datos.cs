@@ -13,7 +13,7 @@ namespace MiWebService.Data
             _connectionString = connectionString;
         }
 
-        public List<Persona> GetPersonas(DateTime? dtFechaModificacion)
+        public List<Persona> GetPersonas(string dtFechaModificacion)
         {
             NpgsqlConnection connection = null;
             var personas = new List<Persona>();
@@ -24,11 +24,11 @@ namespace MiWebService.Data
                 connection.Open();
 
                 string sql = @"SELECT int_id, var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, 
-                                      var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
-                               FROM usuarios
-                               WHERE ";
+                              var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
+                       FROM usuarios
+                       WHERE ";
 
-                if (dtFechaModificacion == null)
+                if (string.IsNullOrEmpty(dtFechaModificacion))
                     sql += "bol_enuso = true";
                 else
                     sql += "dt_fecha_modificacion >= @dtFechaModificacion AND bol_enuso = true";
@@ -37,8 +37,17 @@ namespace MiWebService.Data
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    if (dtFechaModificacion != null && dtFechaModificacion != DateTime.MinValue)
-                        command.Parameters.AddWithValue("@dtFechaModificacion", dtFechaModificacion.Value);
+                    if (!string.IsNullOrEmpty(dtFechaModificacion))
+                    {
+                        if (DateTime.TryParse(dtFechaModificacion, out DateTime fechaParsed))
+                        {
+                            command.Parameters.AddWithValue("@dtFechaModificacion", fechaParsed);
+                        }
+                        else
+                        {
+                            return personas; 
+                        }
+                    }
 
                     using (var reader = command.ExecuteReader())
                     {
@@ -73,6 +82,7 @@ namespace MiWebService.Data
                 if (connection?.State == System.Data.ConnectionState.Open)
                     connection.Close();
             }
+
             return personas;
         }
 
@@ -279,4 +289,4 @@ namespace MiWebService.Data
             return ID;
         }
     }
-} 
+}
