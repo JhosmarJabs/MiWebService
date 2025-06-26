@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using Npgsql;
 using MiWebService.Models;
+using MiWebService.Data;
 
 namespace MiWebService.Controllers
 {
@@ -8,45 +8,41 @@ namespace MiWebService.Controllers
     [Route("MiWebService")]
     public class EmpresasController : ControllerBase
     {
-        private readonly string _connectionString;
+        private readonly EmpresasDatos _empresasDatos;
 
         public EmpresasController(IConfiguration configuration)
         {
-            _connectionString = configuration.GetConnectionString("ConexionServidor");
+            string connectionString = configuration.GetConnectionString("ConexionServidor");
+            _empresasDatos = new EmpresasDatos(connectionString);
         }
 
         [HttpPost]
         [Route("GetEmpresas")]
-         public List<Empresa> GetEmpresas()
+        public List<Empresa> GetEmpresas([FromBody] GetEmpresasRequest? fechaModificacion)
         {
-            var empresas = new List<Empresa>();
+            string fecha = fechaModificacion?.DtFechaModificacion ?? string.Empty;
+            return _empresasDatos.GetEmpresas(fecha);
+        }
 
-            using (var connection = new NpgsqlConnection(_connectionString))
-            {
-                connection.Open();
+        [HttpPost]
+        [Route("CreateEmpresa")]
+        public int CreateEmpresa([FromBody] Empresa empresa)
+        {
+            return _empresasDatos.CreateEmpresa(empresa);
+        }
 
-                string sql = @"SELECT int_id, var_nombre
-                               FROM empresas";
+        [HttpPost]
+        [Route("UpdateEmpresa")]
+        public int UpdateEmpresa([FromBody] Empresa empresa)
+        {
+            return _empresasDatos.UpdateEmpresa(empresa);
+        }
 
-                using (var command = new NpgsqlCommand(sql, connection))
-                {
-                    using (var reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            var empresa = new Empresa
-                            {
-                                Id = reader.GetInt32(reader.GetOrdinal("int_id")),
-                                Nombre = reader.GetString(reader.GetOrdinal("var_nombre")),
-                            };
-                            empresas.Add(empresa);
-                        }
-                    }
-                }
-                connection.Close();
-            }
-
-            return empresas;
+        [HttpPost]
+        [Route("DeleteEmpresa")]
+        public int DeleteEmpresa([FromBody] int id)
+        {
+            return _empresasDatos.DeleteEmpresa(id);
         }
     }
-}   
+}

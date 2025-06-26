@@ -9,4 +9,8 @@ namespace MiWebService.Models
         public string FechaModificacion { get; set; }
         public bool EnUso { get; set; } = true;
     }
+    public class GetEmpresasRequest
+    {
+        public string? DtFechaModificacion { get; set; }
+    }
 }

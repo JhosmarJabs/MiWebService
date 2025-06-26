@@ -8,12 +8,11 @@ namespace MiWebService.Controllers
     [Route("MiWebService")]
     public class PersonasController : ControllerBase
     {
-        private readonly Datos _datos;
+        private readonly PersonaDatos _datos;
 
-        public PersonasController(IConfiguration configuration)
+        public PersonasController(PersonaDatos datos)
         {
-            string connectionString = configuration.GetConnectionString("ConexionServidor");
-            _datos = new Datos(connectionString);
+            _datos = datos;
         }
 
         [HttpPost]

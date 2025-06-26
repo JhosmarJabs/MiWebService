@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MiWebService.Data
 {
-    public class Datos
+    public class PersonaDatos
     {
         private readonly string _connectionString;
 
-        public Datos(string connectionString)
+        public PersonaDatos(string connectionString)
         {
             _connectionString = connectionString;
         }
@@ -45,7 +45,7 @@ namespace MiWebService.Data
                         }
                         else
                         {
-                            return personas; 
+                            return personas;
                         }
                     }
 
@@ -156,7 +156,7 @@ namespace MiWebService.Data
         public int UpdatePersona(Persona persona)
         {
             NpgsqlConnection connection = null;
-            int ID = -1;
+            int ID = 0;
 
             try
             {
@@ -167,7 +167,6 @@ namespace MiWebService.Data
                 else
                 {
                     DateTime fechaModificacion = DateTime.UtcNow;
-
                     connection = new NpgsqlConnection(_connectionString);
                     connection.Open();
 
@@ -176,49 +175,52 @@ namespace MiWebService.Data
                         setTimezoneCommand.ExecuteNonQuery();
                     }
 
+ 
                     string sql = @"UPDATE usuarios SET 
-                                   var_nombre = @nombre, 
-                                   var_apaterno = @apaterno,
-                                   var_amaterno = @amaterno,
-                                   var_telefono = @telefono,
-                                   var_correo = @correo,
-                                   var_nametag = @nametag,
-                                   dt_fecha_nacimiento = @fechaNacimiento,
-                                   int_empresa_id = @empresaId,
-                                   dt_fecha_modificacion = date_trunc('milliseconds', @fechaModificacion)
-                                   WHERE int_id = @id AND bol_enuso = true
-                                   RETURNING dt_fecha_modificacion;";
+                   var_nombre = @nombre, 
+                   var_apaterno = @apaterno,
+                   var_amaterno = @amaterno,
+                   var_telefono = @telefono,
+                   var_correo = @correo,
+                   var_nametag = @nametag,
+                   dt_fecha_nacimiento = @fechaNacimiento,
+                   int_empresa_id = @empresaId,
+                   dt_fecha_modificacion = date_trunc('milliseconds', @fechaModificacion)
+                   WHERE int_id = @id AND bol_enuso = true;";
 
                     using (var command = new NpgsqlCommand(sql, connection))
                     {
                         command.Parameters.AddWithValue("@id", persona.Id);
-                        command.Parameters.AddWithValue("@nombre", string.IsNullOrEmpty(persona.Nombre) ? string.Empty : persona.Nombre);
-                        command.Parameters.AddWithValue("@apaterno", string.IsNullOrEmpty(persona.APaterno) ? string.Empty : persona.APaterno);
-                        command.Parameters.AddWithValue("@amaterno", string.IsNullOrEmpty(persona.AMaterno) ? string.Empty : persona.AMaterno);
+                        command.Parameters.AddWithValue("@nombre", persona.Nombre ?? string.Empty);
+                        command.Parameters.AddWithValue("@apaterno", persona.APaterno ?? string.Empty);
+                        command.Parameters.AddWithValue("@amaterno", persona.AMaterno ?? string.Empty);
                         command.Parameters.AddWithValue("@telefono", persona.Telefono);
-                        command.Parameters.AddWithValue("@correo", string.IsNullOrEmpty(persona.Correo) ? (object)DBNull.Value : persona.Correo);
-                        command.Parameters.AddWithValue("@nametag", string.IsNullOrEmpty(persona.NameTag) ? (object)DBNull.Value : persona.NameTag);
+                        command.Parameters.AddWithValue("@correo", persona.Correo ?? string.Empty);
+                        command.Parameters.AddWithValue("@nametag", persona.NameTag ?? string.Empty);
                         command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
-                        command.Parameters.AddWithValue("@fechaModificacion", fechaModificacion);
+                        command.Parameters.AddWithValue("@fechaModificacion", DateTime.UtcNow);
 
                         if (string.IsNullOrEmpty(persona.FechaNacimiento))
-                            command.Parameters.AddWithValue("@fechaNacimiento", (object)DBNull.Value);
+                        {
+                            command.Parameters.AddWithValue("@fechaNacimiento", DBNull.Value);
+                        }
+                        else if (DateTime.TryParse(persona.FechaNacimiento, out DateTime fechaNacimiento))
+                        {
+                            command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
+                        }
                         else
                         {
-                            if (DateTime.TryParse(persona.FechaNacimiento, out DateTime fechaNacimiento))
-                                command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
-                            else
-                                ID = -1;
+                            ID = -1;
                         }
 
                         if (ID != -1)
                         {
-                            var result = command.ExecuteScalar();
+                            int filasAfectadas = command.ExecuteNonQuery();
 
-                            if (result == null)
-                                ID = 0;
-                            else
+                            if (filasAfectadas > 0)
                                 ID = persona.Id;
+                            else
+                                ID = 0;
                         }
                     }
                 }
@@ -232,6 +234,7 @@ namespace MiWebService.Data
                 if (connection?.State == System.Data.ConnectionState.Open)
                     connection.Close();
             }
+
             return ID;
         }
 

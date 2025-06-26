@@ -19,5 +19,5 @@ namespace MiWebService.Models
     public class GetPersonasRequest
     {
         public string? DtFechaModificacion { get; set; }
-    }
+    } 
 }
