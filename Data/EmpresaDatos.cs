@@ -127,8 +127,9 @@ namespace MiWebService.Data
 
         public int UpdateEmpresa(Empresa empresa)
         {
+            var Id = 0;
             if (empresa == null || empresa.Id <= 0)
-                return -1;
+                Id = -1;
 
             NpgsqlConnection connection = null;
 
@@ -157,17 +158,19 @@ namespace MiWebService.Data
                     command.Parameters.AddWithValue("@fechaModificacion", DateTime.UtcNow);
 
                     var result = command.ExecuteScalar();
-                    return result == null ? 0 : (int)result;
+                    Id = result == null ? 0 : (int)result;
                 }
             }
             catch (Exception)
             {
-                return -1;
+                Id = -1;
             }
             finally
             {
                 connection?.Close();
             }
+
+            return Id;
         }
 
         public int DeleteEmpresa(int id)
