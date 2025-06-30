@@ -13,7 +13,7 @@ namespace MiWebService.Data
             _connectionString = connectionString;
         }
 
-        public List<Persona> GetPersonas(string dtFechaModificacion)
+        public List<Persona> GetPersonas(DateTime? DtModificacion)
         {
             NpgsqlConnection connection = null;
             var personas = new List<Persona>();
@@ -24,29 +24,22 @@ namespace MiWebService.Data
                 connection.Open();
 
                 string sql = @"SELECT int_id, var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, 
-                              var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
-                       FROM usuarios
-                       WHERE ";
+                      var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
+               FROM usuarios
+               WHERE ";
 
-                if (string.IsNullOrEmpty(dtFechaModificacion))
+                if (DtModificacion == null)
                     sql += "bol_enuso = true";
                 else
-                    sql += "dt_fecha_modificacion >= @dtFechaModificacion AND bol_enuso = true";
+                    sql += "dt_fecha_modificacion >= @DtModificacion AND bol_enuso = true";
 
                 sql += " ORDER BY dt_fecha_modificacion DESC, var_nombre";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    if (!string.IsNullOrEmpty(dtFechaModificacion))
+                    if (DtModificacion.HasValue)
                     {
-                        if (DateTime.TryParse(dtFechaModificacion, out DateTime fechaParsed))
-                        {
-                            command.Parameters.AddWithValue("@dtFechaModificacion", fechaParsed);
-                        }
-                        else
-                        {
-                            return personas;
-                        }
+                        command.Parameters.AddWithValue("@DtModificacion", DtModificacion.Value);
                     }
 
                     using (var reader = command.ExecuteReader())
@@ -63,7 +56,7 @@ namespace MiWebService.Data
                                 Correo = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
                                 NameTag = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
                                 FechaRegistro = reader.IsDBNull(7) ? string.Empty : reader.GetDateTime(7).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                                FechaModificacion = reader.IsDBNull(8) ? string.Empty : reader.GetDateTime(8).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                                FModificacion = reader.IsDBNull(8) ? string.Empty : reader.GetDateTime(8).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                                 FechaNacimiento = reader.IsDBNull(9) ? string.Empty : reader.GetDateTime(9).ToString("yyyy-MM-dd"),
                                 EmpresaId = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
                                 EnUso = reader.IsDBNull(11) ? false : reader.GetBoolean(11)
@@ -175,7 +168,7 @@ namespace MiWebService.Data
                         setTimezoneCommand.ExecuteNonQuery();
                     }
 
- 
+
                     string sql = @"UPDATE usuarios SET 
                    var_nombre = @nombre, 
                    var_apaterno = @apaterno,
@@ -215,6 +208,7 @@ namespace MiWebService.Data
 
                         if (ID != -1)
                         {
+
                             int filasAfectadas = command.ExecuteNonQuery();
 
                             if (filasAfectadas > 0)

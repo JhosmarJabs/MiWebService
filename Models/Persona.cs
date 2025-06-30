@@ -1,6 +1,6 @@
 namespace MiWebService.Models
 {
-    public class Persona
+    public class Persona : FmPersona
     {
         public int Id { get; set; }
         public string Nombre { get; set; }
@@ -10,14 +10,13 @@ namespace MiWebService.Models
         public string Correo { get; set; }
         public string NameTag { get; set; }
         public string? FechaRegistro { get; set; }
-        public string? FechaModificacion { get; set; }
         public string FechaNacimiento { get; set; }
         public int EmpresaId { get; set; }
         public bool EnUso { get; set; }
     }
 
-    public class GetPersonasRequest
+    public class FmPersona
     {
-        public string? DtFechaModificacion { get; set; }
+        public string? FModificacion { get; set; }
     } 
 }

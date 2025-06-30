@@ -17,9 +17,16 @@ namespace MiWebService.Controllers
 
         [HttpPost]
         [Route("GetPersonas")]
-        public List<Persona> GetPersonas([FromBody] GetPersonasRequest? FechaModificacion)
+        public List<Persona> GetPersonas([FromBody] FmPersona? fmG)
         {
-            string fecha = FechaModificacion?.DtFechaModificacion ?? string.Empty;
+            string f = fmG?.FModificacion ?? string.Empty;
+            DateTime? fecha = null;
+
+            if (f != null && DateTime.TryParse(f, out DateTime fechaParsed))
+            {
+                fecha = fechaParsed;
+            }
+
             return _datos.GetPersonas(fecha);
         }
 
