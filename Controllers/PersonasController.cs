@@ -9,25 +9,29 @@ namespace MiWebService.Controllers
     public class PersonasController : ControllerBase
     {
         private readonly PersonaDatos _datos;
+        private readonly MemoriaPersonas _memoriaPersonas;
 
-        public PersonasController(PersonaDatos datos)
+        public PersonasController(PersonaDatos datos, MemoriaPersonas memoriaPersonas)
         {
             _datos = datos;
+            _memoriaPersonas = memoriaPersonas;
+
         }
 
         [HttpPost]
         [Route("GetPersonas")]
         public List<Persona> GetPersonas([FromBody] FmPersona? fmG)
         {
-            string f = fmG?.FModificacion ?? string.Empty;
+            string f = fmG?.FModificacion ?? "";
             DateTime? fecha = null;
 
-            if (f != null && DateTime.TryParse(f, out DateTime fechaParsed))
+            if (f != "" && DateTime.TryParse(f, out DateTime fechaParsed))
             {
                 fecha = fechaParsed;
             }
 
-            return _datos.GetPersonas(fecha);
+            _memoriaPersonas.ArregloPersonas(fecha);
+            return _memoriaPersonas.ObtenerPersonas().Values.ToList();
         }
 
         [HttpPost]

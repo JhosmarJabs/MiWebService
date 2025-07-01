@@ -8,6 +8,8 @@ builder.Services.AddControllers();
 string connectionString = builder.Configuration.GetConnectionString("ConexionServidor");
 builder.Services.AddScoped<EmpresasDatos>(_ => new EmpresasDatos(connectionString));
 builder.Services.AddScoped<PersonaDatos>(_ => new PersonaDatos(connectionString));
+builder.Services.AddSingleton<MemoriaPersonas>();
+
 
 builder.Services.AddCors(options =>
 {

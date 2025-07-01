@@ -23,15 +23,14 @@ namespace MiWebService.Data
                 connection = new NpgsqlConnection(_connectionString);
                 connection.Open();
 
-                string sql = @"SELECT int_id, var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, 
-                      var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
-               FROM usuarios
-               WHERE ";
+                string sql = @"SELECT int_id, var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, var_nametag, dt_fecha_registro, dt_fecha_modificacion, dt_fecha_nacimiento, int_empresa_id, bol_enuso 
+                                FROM usuarios
+                                WHERE ";
 
                 if (DtModificacion == null)
                     sql += "bol_enuso = true";
                 else
-                    sql += "dt_fecha_modificacion >= @DtModificacion AND bol_enuso = true";
+                    sql += "dt_fecha_modificacion >= @DtModificacion";
 
                 sql += " ORDER BY dt_fecha_modificacion DESC, var_nombre";
 
@@ -48,18 +47,17 @@ namespace MiWebService.Data
                         {
                             var persona = new Persona
                             {
-                                Id = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
-                                Nombre = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
-                                APaterno = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
-                                AMaterno = reader.IsDBNull(3) ? string.Empty : reader.GetString(3),
-                                Telefono = reader.IsDBNull(4) ? 0 : reader.GetInt64(4),
-                                Correo = reader.IsDBNull(5) ? string.Empty : reader.GetString(5),
-                                NameTag = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
-                                FechaRegistro = reader.IsDBNull(7) ? string.Empty : reader.GetDateTime(7).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                                FModificacion = reader.IsDBNull(8) ? string.Empty : reader.GetDateTime(8).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                                FechaNacimiento = reader.IsDBNull(9) ? string.Empty : reader.GetDateTime(9).ToString("yyyy-MM-dd"),
+                                Id = reader.GetInt32(0),
+                                Nombre = reader.GetString(1),
+                                APaterno = reader.GetString(2),
+                                AMaterno = reader.GetString(3),
+                                Telefono = reader.GetInt64(4),
+                                Correo = reader.GetString(5),
+                                NameTag = reader.GetString(6),
+                                FModificacion = reader.GetDateTime(8).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                                FechaNacimiento = reader.GetDateTime(9).ToString("yyyy-MM-dd"),
                                 EmpresaId = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
-                                EnUso = reader.IsDBNull(11) ? false : reader.GetBoolean(11)
+                                EnUso = reader.GetBoolean(11)
                             };
                             personas.Add(persona);
                         }
@@ -72,7 +70,7 @@ namespace MiWebService.Data
             }
             finally
             {
-                if (connection?.State == System.Data.ConnectionState.Open)
+                if (connection?.State != System.Data.ConnectionState.Closed)
                     connection.Close();
             }
 
@@ -81,57 +79,39 @@ namespace MiWebService.Data
 
         public int CreatePersona(Persona persona)
         {
+            int ID = 0;
+            if (persona == null)
+                ID = -1;
+
             NpgsqlConnection connection = null;
-            int ID = -1;
 
             try
             {
-                if (persona == null)
+                connection = new NpgsqlConnection(_connectionString);
+                connection.Open();
+
+                string sql = @"INSERT INTO usuarios 
+                       (var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, var_nametag, 
+                        dt_fecha_nacimiento, dt_fecha_registro, dt_fecha_modificacion, int_empresa_id, bol_enuso)
+                       VALUES (@nombre, @apaterno, @amaterno, @telefono, @correo, @nametag, 
+                               @fechaNacimiento, CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', @empresaId, true)
+                       RETURNING int_id;";
+
+                using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    ID = -1;
-                }
-                else
-                {
-                    connection = new NpgsqlConnection(_connectionString);
-                    connection.Open();
+                    command.Parameters.AddWithValue("@nombre", persona.Nombre);
+                    command.Parameters.AddWithValue("@apaterno", persona.APaterno);
+                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno);
+                    command.Parameters.AddWithValue("@telefono", persona.Telefono);
+                    command.Parameters.AddWithValue("@correo", persona.Correo);
+                    command.Parameters.AddWithValue("@nametag", persona.NameTag);
+                    command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
 
-                    using (var setTimezoneCommand = new NpgsqlCommand("SET TIME ZONE 'UTC'", connection))
-                    {
-                        setTimezoneCommand.ExecuteNonQuery();
-                    }
+                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento);
+                    command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
-                    DateTime fechaCreacion = DateTime.UtcNow;
-                    DateTime fechaModificacion = DateTime.UtcNow;
-
-                    string sql = @"INSERT INTO usuarios 
-                                   (var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, var_nametag, 
-                                    dt_fecha_nacimiento, dt_fecha_registro, dt_fecha_modificacion, int_empresa_id, bol_enuso)
-                                   VALUES (@nombre, @apaterno, @amaterno, @telefono, @correo, @nametag, 
-                                           @fechaNacimiento, date_trunc('milliseconds', @fechaRegistro), date_trunc('milliseconds', @fechaModificacion), @empresaId, true)
-                                   RETURNING int_id;";
-
-                    using (var command = new NpgsqlCommand(sql, connection))
-                    {
-                        command.Parameters.AddWithValue("@nombre", string.IsNullOrEmpty(persona.Nombre) ? string.Empty : persona.Nombre);
-                        command.Parameters.AddWithValue("@apaterno", string.IsNullOrEmpty(persona.APaterno) ? string.Empty : persona.APaterno);
-                        command.Parameters.AddWithValue("@amaterno", string.IsNullOrEmpty(persona.AMaterno) ? string.Empty : persona.AMaterno);
-                        command.Parameters.AddWithValue("@telefono", persona.Telefono);
-                        command.Parameters.AddWithValue("@correo", string.IsNullOrEmpty(persona.Correo) ? string.Empty : persona.Correo);
-                        command.Parameters.AddWithValue("@nametag", string.IsNullOrEmpty(persona.NameTag) ? string.Empty : persona.NameTag);
-                        command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
-                        command.Parameters.AddWithValue("@fechaRegistro", fechaCreacion);
-                        command.Parameters.AddWithValue("@fechaModificacion", fechaModificacion);
-
-                        DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento);
-                        command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
-
-                        var result = command.ExecuteScalar();
-
-                        if (result == null)
-                            ID = 0;
-                        else
-                            ID = (int)result;
-                    }
+                    var result = command.ExecuteScalar();
+                    ID = result == null ? 0 : (int)result;
                 }
             }
             catch (Exception)
@@ -140,7 +120,7 @@ namespace MiWebService.Data
             }
             finally
             {
-                if (connection?.State == System.Data.ConnectionState.Open)
+                if (connection?.State != System.Data.ConnectionState.Closed)
                     connection.Close();
             }
             return ID;
@@ -148,75 +128,47 @@ namespace MiWebService.Data
 
         public int UpdatePersona(Persona persona)
         {
+            if (persona == null || persona.Id <= 0)
+                return -1;
+
             NpgsqlConnection connection = null;
             int ID = 0;
 
+            if (persona == null)
+                ID = -1;
             try
             {
-                if (persona == null || persona.Id <= 0)
+                connection = new NpgsqlConnection(_connectionString);
+                connection.Open();
+
+                string sql = @"UPDATE usuarios SET 
+                       var_nombre = @nombre, 
+                       var_apaterno = @apaterno,
+                       var_amaterno = @amaterno,
+                       var_telefono = @telefono,
+                       var_correo = @correo,
+                       var_nametag = @nametag,
+                       dt_fecha_nacimiento = @fechaNacimiento,
+                       int_empresa_id = @empresaId,
+                       dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
+                       WHERE int_id = @id AND bol_enuso = true;";
+
+                using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    ID = -1;
-                }
-                else
-                {
-                    DateTime fechaModificacion = DateTime.UtcNow;
-                    connection = new NpgsqlConnection(_connectionString);
-                    connection.Open();
+                    command.Parameters.AddWithValue("@id", persona.Id);
+                    command.Parameters.AddWithValue("@nombre", persona.Nombre);
+                    command.Parameters.AddWithValue("@apaterno", persona.APaterno);
+                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno);
+                    command.Parameters.AddWithValue("@telefono", persona.Telefono);
+                    command.Parameters.AddWithValue("@correo", persona.Correo);
+                    command.Parameters.AddWithValue("@nametag", persona.NameTag);
+                    command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
 
-                    using (var setTimezoneCommand = new NpgsqlCommand("SET TIME ZONE 'UTC'", connection))
-                    {
-                        setTimezoneCommand.ExecuteNonQuery();
-                    }
+                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento);
+                    command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
-
-                    string sql = @"UPDATE usuarios SET 
-                   var_nombre = @nombre, 
-                   var_apaterno = @apaterno,
-                   var_amaterno = @amaterno,
-                   var_telefono = @telefono,
-                   var_correo = @correo,
-                   var_nametag = @nametag,
-                   dt_fecha_nacimiento = @fechaNacimiento,
-                   int_empresa_id = @empresaId,
-                   dt_fecha_modificacion = date_trunc('milliseconds', @fechaModificacion)
-                   WHERE int_id = @id AND bol_enuso = true;";
-
-                    using (var command = new NpgsqlCommand(sql, connection))
-                    {
-                        command.Parameters.AddWithValue("@id", persona.Id);
-                        command.Parameters.AddWithValue("@nombre", persona.Nombre ?? string.Empty);
-                        command.Parameters.AddWithValue("@apaterno", persona.APaterno ?? string.Empty);
-                        command.Parameters.AddWithValue("@amaterno", persona.AMaterno ?? string.Empty);
-                        command.Parameters.AddWithValue("@telefono", persona.Telefono);
-                        command.Parameters.AddWithValue("@correo", persona.Correo ?? string.Empty);
-                        command.Parameters.AddWithValue("@nametag", persona.NameTag ?? string.Empty);
-                        command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
-                        command.Parameters.AddWithValue("@fechaModificacion", DateTime.UtcNow);
-
-                        if (string.IsNullOrEmpty(persona.FechaNacimiento))
-                        {
-                            command.Parameters.AddWithValue("@fechaNacimiento", DBNull.Value);
-                        }
-                        else if (DateTime.TryParse(persona.FechaNacimiento, out DateTime fechaNacimiento))
-                        {
-                            command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
-                        }
-                        else
-                        {
-                            ID = -1;
-                        }
-
-                        if (ID != -1)
-                        {
-
-                            int filasAfectadas = command.ExecuteNonQuery();
-
-                            if (filasAfectadas > 0)
-                                ID = persona.Id;
-                            else
-                                ID = 0;
-                        }
-                    }
+                    int filasAfectadas = command.ExecuteNonQuery();
+                    ID = filasAfectadas > 0 ? persona.Id : 0;
                 }
             }
             catch (Exception)
@@ -225,7 +177,7 @@ namespace MiWebService.Data
             }
             finally
             {
-                if (connection?.State == System.Data.ConnectionState.Open)
+                if (connection?.State != System.Data.ConnectionState.Closed)
                     connection.Close();
             }
 
@@ -235,43 +187,27 @@ namespace MiWebService.Data
         public int DeletePersona(int id)
         {
             NpgsqlConnection connection = null;
-            int ID = -1;
+            int ID = 0;
 
+            if (id <= 0)
+                ID = -1;
             try
             {
-                if (id <= 0)
+                connection = new NpgsqlConnection(_connectionString);
+                connection.Open();
+
+                string sql = @"UPDATE usuarios SET 
+                               bol_enuso = false,
+                               dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
+                               WHERE int_id = @id AND bol_enuso = true
+                               RETURNING int_id;";
+
+                using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    ID = -1;
-                }
-                else
-                {
-                    DateTime fechaModificacion = DateTime.UtcNow;
+                    command.Parameters.AddWithValue("@id", id);
 
-                    connection = new NpgsqlConnection(_connectionString);
-                    connection.Open();
-
-                    using (var setTimezoneCommand = new NpgsqlCommand("SET TIME ZONE 'UTC'", connection))
-                    {
-                        setTimezoneCommand.ExecuteNonQuery();
-                    }
-
-                    string sql = @"UPDATE usuarios SET 
-                                   bol_enuso = false,
-                                   dt_fecha_modificacion = date_trunc('milliseconds', @fechaModificacion)
-                                   WHERE int_id = @id AND bol_enuso = true
-                                   RETURNING int_id;";
-
-                    using (var command = new NpgsqlCommand(sql, connection))
-                    {
-                        command.Parameters.AddWithValue("@id", id);
-                        command.Parameters.AddWithValue("@fechaModificacion", fechaModificacion);
-
-                        var result = command.ExecuteScalar();
-                        if (result == null)
-                            ID = 0;
-                        else
-                            ID = id;
-                    }
+                    var result = command.ExecuteScalar();
+                    ID = result == null ? 0 : id;
                 }
             }
             catch (Exception)
@@ -280,7 +216,7 @@ namespace MiWebService.Data
             }
             finally
             {
-                if (connection?.State == System.Data.ConnectionState.Open)
+                if (connection?.State != System.Data.ConnectionState.Closed)
                     connection.Close();
             }
             return ID;
