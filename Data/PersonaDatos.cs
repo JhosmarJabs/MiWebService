@@ -32,7 +32,7 @@ namespace MiWebService.Data
                 else
                     sql += "dt_fecha_modificacion >= @DtModificacion";
 
-                sql += " ORDER BY dt_fecha_modificacion DESC, var_nombre";
+                sql += " ORDER BY dt_fecha_modificacion";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
@@ -45,6 +45,7 @@ namespace MiWebService.Data
                     {
                         while (reader.Read())
                         {
+                            // aquí necesito que fechaModificacion se asigne a la propiedad FModificacion para que lo debuelva
                             var persona = new Persona
                             {
                                 Id = reader.GetInt32(0),
@@ -80,8 +81,6 @@ namespace MiWebService.Data
         public int CreatePersona(Persona persona)
         {
             int ID = 0;
-            if (persona == null)
-                ID = -1;
 
             NpgsqlConnection connection = null;
 
@@ -111,7 +110,8 @@ namespace MiWebService.Data
                     command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
                     var result = command.ExecuteScalar();
-                    ID = result == null ? 0 : (int)result;
+                    if (result != null)
+                        ID = (int)result;
                 }
             }
             catch (Exception)
@@ -128,14 +128,9 @@ namespace MiWebService.Data
 
         public int UpdatePersona(Persona persona)
         {
-            if (persona == null || persona.Id <= 0)
-                return -1;
-
             NpgsqlConnection connection = null;
             int ID = 0;
 
-            if (persona == null)
-                ID = -1;
             try
             {
                 connection = new NpgsqlConnection(_connectionString);
@@ -168,7 +163,8 @@ namespace MiWebService.Data
                     command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
                     int filasAfectadas = command.ExecuteNonQuery();
-                    ID = filasAfectadas > 0 ? persona.Id : 0;
+                    if (filasAfectadas > 0)
+                        ID = persona.Id;
                 }
             }
             catch (Exception)
@@ -189,8 +185,6 @@ namespace MiWebService.Data
             NpgsqlConnection connection = null;
             int ID = 0;
 
-            if (id <= 0)
-                ID = -1;
             try
             {
                 connection = new NpgsqlConnection(_connectionString);
@@ -207,7 +201,8 @@ namespace MiWebService.Data
                     command.Parameters.AddWithValue("@id", id);
 
                     var result = command.ExecuteScalar();
-                    ID = result == null ? 0 : id;
+                    if (result != null)
+                        ID = (int)result;
                 }
             }
             catch (Exception)

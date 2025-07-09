@@ -1,12 +1,12 @@
 using MiWebService.Models;
+using System.Collections.Concurrent;
 
 namespace MiWebService.Data
 {
     public class MemoriaPersonas
     {
-        private static Dictionary<int, Persona> _personas = new Dictionary<int, Persona>();
-        private static DateTime? _fechaMaxima = null;
-
+        private static readonly ConcurrentDictionary<int, Persona> _personas = new ConcurrentDictionary<int, Persona>();
+        private static DateTime? _ultimaFechaModificacion = null;
         private readonly PersonaDatos _personaDatos;
 
         public MemoriaPersonas(PersonaDatos personaDatos)
@@ -14,23 +14,40 @@ namespace MiWebService.Data
             _personaDatos = personaDatos;
         }
 
-        public void ArregloPersonas(DateTime? FModificacion)
+        public void ArregloPersonas(DateTime? fechaModificacion)
         {
-            var personasConsulta = _personaDatos.GetPersonas(FModificacion);
+            var personasConsulta = _personaDatos.GetPersonas(fechaModificacion);
 
-
-            if (_personas == null || _personas.Count == 0)
+            foreach (var persona in personasConsulta)
             {
-                _personas = new Dictionary<int, Persona>();
-                _fechaMaxima = FModificacion;
+                if (persona.EnUso)
+                {
+                    _personas.AddOrUpdate(persona.Id, persona, (key, oldValue) => persona);
+                }
+                else
+                {
+                    _personas.TryRemove(persona.Id, out _);
+                }
             }
-            for (int i = 0; i < personasConsulta.Count; i++)
+
+            if (personasConsulta.Any())
             {
-                _personas[personasConsulta[i].Id] = personasConsulta[i];
+                var nuevaFechaMaxima = personasConsulta
+                    .Select(p => DateTime.Parse(p.FModificacion))
+                    .Max();
+
+                if (_ultimaFechaModificacion == null || nuevaFechaMaxima > _ultimaFechaModificacion)
+                {
+                    _ultimaFechaModificacion = nuevaFechaMaxima;
+                }
             }
+            Console.WriteLine($"Personas en memoria: {_personas.Count}");
+        }
 
-            _fechaMaxima = FModificacion;
-
+        public DateTime? ObtenerUltimaFechaModificacion()
+        {
+            Console.WriteLine($"Última fecha de modificación: {_ultimaFechaModificacion}");
+            return _ultimaFechaModificacion;
         }
 
         public Dictionary<int, Persona> ObtenerPersonas()
@@ -38,4 +55,4 @@ namespace MiWebService.Data
             return new Dictionary<int, Persona>(_personas);
         }
     }
-}
+} 

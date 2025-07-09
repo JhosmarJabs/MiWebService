@@ -15,7 +15,6 @@ namespace MiWebService.Controllers
         {
             _datos = datos;
             _memoriaPersonas = memoriaPersonas;
-
         }
 
         [HttpPost]
@@ -25,9 +24,10 @@ namespace MiWebService.Controllers
             string f = fmG?.FModificacion ?? "";
             DateTime? fecha = null;
 
-            if (f != "" && DateTime.TryParse(f, out DateTime fechaParsed))
+            if (!string.IsNullOrEmpty(f))
             {
-                fecha = fechaParsed;
+                DateTime utcDateTime = DateTime.Parse(f, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                fecha = utcDateTime;
             }
 
             _memoriaPersonas.ArregloPersonas(fecha);
@@ -38,14 +38,21 @@ namespace MiWebService.Controllers
         [Route("CreatePersona")]
         public int CreatePersona([FromBody] Persona persona)
         {
-            return _datos.CreatePersona(persona);
+            int ID = 0;
+            if (persona != null)
+                ID = _datos.CreatePersona(persona);
+
+            return ID;
         }
 
         [HttpPost]
         [Route("UpdatePersona")]
         public int UpdatePersona([FromBody] Persona persona)
         {
-            return _datos.UpdatePersona(persona);
+            int ID = 0;
+            if (persona != null)
+                ID = _datos.UpdatePersona(persona);
+            return ID;
         }
 
         [HttpPost]
@@ -53,7 +60,10 @@ namespace MiWebService.Controllers
         public int DeletePersona([FromBody] int id)
         {
 
-            return _datos.DeletePersona(id);
+            int ID = 0;
+            if (id != 0)
+                ID = _datos.DeletePersona(id);
+            return ID;
         }
     }
 }
