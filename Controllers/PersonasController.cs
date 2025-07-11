@@ -21,6 +21,7 @@ namespace MiWebService.Controllers
         [Route("GetPersonas")]
         public List<Persona> GetPersonas([FromBody] FmPersona? fmG)
         {
+            
             return _memoriaPersonas.ObtenerPersonas().Values.ToList();
         }
 

@@ -1,6 +1,7 @@
 using Npgsql;
 using MiWebService.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Tree;
 
 namespace MiWebService.Data
 {
@@ -13,10 +14,12 @@ namespace MiWebService.Data
             _connectionString = connectionString;
         }
 
-        public List<Persona> GetPersonas(DateTime? DtModificacion)
+        public List<Persona> GetPersonas(DateTime? DtModificacion, out DateTime? ultimaFechaModificacion)
         {
             NpgsqlConnection connection = null;
             var personas = new List<Persona>();
+            ultimaFechaModificacion = null;
+            DateTime? fechaMaxima = null;
 
             try
             {
@@ -45,7 +48,7 @@ namespace MiWebService.Data
                     {
                         while (reader.Read())
                         {
-                            // aquí necesito que fechaModificacion se asigne a la propiedad FModificacion para que lo debuelva
+                            var fechaModificacion = reader.GetDateTime(8);
                             var persona = new Persona
                             {
                                 Id = reader.GetInt32(0),
@@ -55,15 +58,20 @@ namespace MiWebService.Data
                                 Telefono = reader.GetInt64(4),
                                 Correo = reader.GetString(5),
                                 NameTag = reader.GetString(6),
-                                FModificacion = reader.GetDateTime(8).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
                                 FechaNacimiento = reader.GetDateTime(9).ToString("yyyy-MM-dd"),
                                 EmpresaId = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
                                 EnUso = reader.GetBoolean(11)
                             };
                             personas.Add(persona);
+                            if (fechaMaxima == null || fechaModificacion > fechaMaxima)
+                            {
+                                fechaMaxima = fechaModificacion;
+                            }
                         }
+
                     }
                 }
+                ultimaFechaModificacion = fechaMaxima;
             }
             catch (Exception)
             {

@@ -16,7 +16,7 @@ namespace MiWebService.Data
 
         public void ArregloPersonas(DateTime? fechaModificacion)
         {
-            var personasConsulta = _personaDatos.GetPersonas(fechaModificacion);
+            var personasConsulta = _personaDatos.GetPersonas(fechaModificacion, out _ultimaFechaModificacion);
 
             foreach (var persona in personasConsulta)
             {
@@ -41,18 +41,14 @@ namespace MiWebService.Data
                     _ultimaFechaModificacion = nuevaFechaMaxima;
                 }
             }
+            
             Console.WriteLine($"Personas en memoria: {_personas.Count}");
         }
-
-        public DateTime? ObtenerUltimaFechaModificacion()
-        {
-            Console.WriteLine($"Última fecha de modificación: {_ultimaFechaModificacion}");
-            return _ultimaFechaModificacion;
-        }
+        
 
         public Dictionary<int, Persona> ObtenerPersonas()
         {
             return new Dictionary<int, Persona>(_personas);
         }
     }
-} 
+}

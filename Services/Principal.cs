@@ -10,6 +10,7 @@ namespace MiWebService.Services
         private readonly MemoriaPersonas _memoriaPersonas;
         private readonly string _connectionString;
 
+        private DateTime? fechaModificacion = null;
         public Principal(string connectionString)
         {
             _connectionString = connectionString;
@@ -23,7 +24,7 @@ namespace MiWebService.Services
             _timer = new System.Timers.Timer(10000);
             _timer.Elapsed += (sender, e) =>
             {
-                _memoriaPersonas.ArregloPersonas(_memoriaPersonas.ObtenerUltimaFechaModificacion());
+                _memoriaPersonas.ArregloPersonas(fechaModificacion);
             };
             _timer.AutoReset = true;
             _timer.Start();
