@@ -21,7 +21,16 @@ namespace MiWebService.Controllers
         [Route("GetPersonas")]
         public List<Persona> GetPersonas([FromBody] FmPersona? fmG)
         {
-            
+            DateTime? fechaModificacion = null;
+
+            if (fmG != null && !string.IsNullOrEmpty(fmG.FModificacion))
+            {
+                if (DateTime.TryParse(fmG.FModificacion, out DateTime fecha))
+                {
+                    fechaModificacion = fecha;
+                }
+            }
+            _memoriaPersonas.ArregloPersonas(fechaModificacion);
             return _memoriaPersonas.ObtenerPersonas().Values.ToList();
         }
 

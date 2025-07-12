@@ -16,7 +16,7 @@ namespace MiWebService.Data
 
         public List<Persona> GetPersonas(DateTime? DtModificacion, out DateTime? ultimaFechaModificacion)
         {
-            NpgsqlConnection connection = null;
+            NpgsqlConnection connection = null!;
             var personas = new List<Persona>();
             ultimaFechaModificacion = null;
             DateTime? fechaMaxima = null;
@@ -48,7 +48,7 @@ namespace MiWebService.Data
                     {
                         while (reader.Read())
                         {
-                            var fechaModificacion = reader.GetDateTime(8);
+                            var fechaMod = reader.GetDateTime(8);
                             var persona = new Persona
                             {
                                 Id = reader.GetInt32(0),
@@ -58,14 +58,15 @@ namespace MiWebService.Data
                                 Telefono = reader.GetInt64(4),
                                 Correo = reader.GetString(5),
                                 NameTag = reader.GetString(6),
+                                FModificacion = fechaMod.ToString("yyyy-MM-dd HH:mm:ss"),
                                 FechaNacimiento = reader.GetDateTime(9).ToString("yyyy-MM-dd"),
                                 EmpresaId = reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
                                 EnUso = reader.GetBoolean(11)
                             };
                             personas.Add(persona);
-                            if (fechaMaxima == null || fechaModificacion > fechaMaxima)
+                            if (fechaMaxima == null || fechaMod > fechaMaxima)
                             {
-                                fechaMaxima = fechaModificacion;
+                                fechaMaxima = fechaMod;
                             }
                         }
 
@@ -90,7 +91,7 @@ namespace MiWebService.Data
         {
             int ID = 0;
 
-            NpgsqlConnection connection = null;
+            NpgsqlConnection connection = null!;
 
             try
             {
@@ -136,7 +137,7 @@ namespace MiWebService.Data
 
         public int UpdatePersona(Persona persona)
         {
-            NpgsqlConnection connection = null;
+            NpgsqlConnection connection = null!;
             int ID = 0;
 
             try
@@ -190,7 +191,7 @@ namespace MiWebService.Data
 
         public int DeletePersona(int id)
         {
-            NpgsqlConnection connection = null;
+            NpgsqlConnection connection = null!;
             int ID = 0;
 
             try

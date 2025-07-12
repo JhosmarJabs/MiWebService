@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-string connectionString = builder.Configuration.GetConnectionString("ConexionServidor");
+string connectionString = builder.Configuration.GetConnectionString("ConexionServidor")!;
 builder.Services.AddScoped<EmpresasDatos>(_ => new EmpresasDatos(connectionString));
 builder.Services.AddScoped<PersonaDatos>(_ => new PersonaDatos(connectionString));
 

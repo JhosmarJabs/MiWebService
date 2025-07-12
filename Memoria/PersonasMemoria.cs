@@ -33,7 +33,7 @@ namespace MiWebService.Data
             if (personasConsulta.Any())
             {
                 var nuevaFechaMaxima = personasConsulta
-                    .Select(p => DateTime.Parse(p.FModificacion))
+                    .Select(p => DateTime.Parse(p.FModificacion!))
                     .Max();
 
                 if (_ultimaFechaModificacion == null || nuevaFechaMaxima > _ultimaFechaModificacion)

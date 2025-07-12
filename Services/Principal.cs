@@ -6,7 +6,7 @@ namespace MiWebService.Services
 {
     public class Principal : IHostedService, IDisposable
     {
-        private System.Timers.Timer _timer;
+        private System.Timers.Timer? _timer;
         private readonly MemoriaPersonas _memoriaPersonas;
         private readonly string _connectionString;
 
