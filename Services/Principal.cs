@@ -7,10 +7,9 @@ namespace MiWebService.Services
     public class Principal : IHostedService, IDisposable
     {
         private System.Timers.Timer? _timer;
-        private readonly MemoriaPersonas _memoriaPersonas;
-        private readonly string _connectionString;
+        public MemoriaPersonas _memoriaPersonas;
+        private string _connectionString;
 
-        private DateTime? fechaModificacion = null;
         public Principal(string connectionString)
         {
             _connectionString = connectionString;
@@ -24,7 +23,7 @@ namespace MiWebService.Services
             _timer = new System.Timers.Timer(10000);
             _timer.Elapsed += (sender, e) =>
             {
-                _memoriaPersonas.ArregloPersonas(fechaModificacion);
+                _memoriaPersonas.ArregloPersonas();
             };
             _timer.AutoReset = true;
             _timer.Start();

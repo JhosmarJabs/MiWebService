@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MiWebService.Models;
 using MiWebService.Data;
+using MiWebService.Services;
 
 namespace MiWebService.Controllers
 {
@@ -8,30 +9,28 @@ namespace MiWebService.Controllers
     [Route("MiWebService")]
     public class PersonasController : ControllerBase
     {
-        private readonly PersonaDatos _datos;
-        private readonly MemoriaPersonas _memoriaPersonas;
+        private PersonaDatos _datos;
+        private MemoriaPersonas _memoriaPersonas;
 
         public PersonasController(PersonaDatos datos, MemoriaPersonas memoriaPersonas)
         {
             _datos = datos;
-            _memoriaPersonas = memoriaPersonas;
+            _memoriaPersonas = new MemoriaPersonas(_datos);
         }
+
 
         [HttpPost]
         [Route("GetPersonas")]
-        public List<Persona> GetPersonas([FromBody] FmPersona? fmG)
+        public List<IPersonas> GetPersonas([FromBody] FmPersona? fmG)
         {
             DateTime? fechaModificacion = null;
 
-            if (fmG != null && !string.IsNullOrEmpty(fmG.FModificacion))
+            if (DateTimeOffset.TryParse(fmG.FModificacion, out DateTimeOffset fechaOffset))
             {
-                if (DateTime.TryParse(fmG.FModificacion, out DateTime fecha))
-                {
-                    fechaModificacion = fecha;
-                }
+                fechaModificacion = fechaOffset.DateTime;
             }
-            _memoriaPersonas.ArregloPersonas(fechaModificacion);
-            return _memoriaPersonas.ObtenerPersonas().Values.ToList();
+        
+            return _memoriaPersonas.ObtenerPersonas(fechaModificacion);
         }
 
         [HttpPost]

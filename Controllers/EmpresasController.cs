@@ -12,8 +12,7 @@ namespace MiWebService.Controllers
 
         public EmpresasController(IConfiguration configuration)
         {
-            
-            string connectionString = configuration.GetConnectionString("ConexionServidor");
+            string connectionString = configuration.GetConnectionString("ConexionServidor")!;
             _empresasDatos = new EmpresasDatos(connectionString);
         }
 

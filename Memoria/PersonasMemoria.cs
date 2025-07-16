@@ -5,22 +5,25 @@ namespace MiWebService.Data
 {
     public class MemoriaPersonas
     {
-        private static readonly ConcurrentDictionary<int, Persona> _personas = new ConcurrentDictionary<int, Persona>();
+        private static ConcurrentDictionary<int, Persona> _personas = new ConcurrentDictionary<int, Persona>();
         private static DateTime? _ultimaFechaModificacion = null;
-        private readonly PersonaDatos _personaDatos;
+        private PersonaDatos _personaDatos;
 
         public MemoriaPersonas(PersonaDatos personaDatos)
         {
             _personaDatos = personaDatos;
         }
 
-        public void ArregloPersonas(DateTime? fechaModificacion)
+        public void ArregloPersonas()
         {
-            var personasConsulta = _personaDatos.GetPersonas(fechaModificacion, out _ultimaFechaModificacion);
+            var personasConsulta = _personaDatos.GetPersonas(_ultimaFechaModificacion, out DateTime? nuevaFechaMaxima);
 
-            foreach (var persona in personasConsulta)
+            for (int i = 0; i < personasConsulta.Count; i++)
             {
-                if (persona.EnUso)
+                var persona = personasConsulta[i];
+                var estaEnUso = persona.EnUso;
+
+                if (estaEnUso)
                 {
                     _personas.AddOrUpdate(persona.Id, persona, (key, oldValue) => persona);
                 }
@@ -29,26 +32,45 @@ namespace MiWebService.Data
                     _personas.TryRemove(persona.Id, out _);
                 }
             }
+        }
 
-            if (personasConsulta.Any())
+        public List<IPersonas> ObtenerPersonas(DateTime? fechaModificacion = null)
+        {
+            var listaPersonas = new List<IPersonas>();
+            var personasEnMemoria = _personas.Values.ToList();
+
+            for (int i = 0; i < personasEnMemoria.Count; i++)
             {
-                var nuevaFechaMaxima = personasConsulta
-                    .Select(p => DateTime.Parse(p.FModificacion!))
-                    .Max();
+                var persona = personasEnMemoria[i];
+                var fechaPersona = DateTime.Parse(persona.FModificacion);
 
-                if (_ultimaFechaModificacion == null || nuevaFechaMaxima > _ultimaFechaModificacion)
+                if (fechaModificacion == null || fechaPersona >= fechaModificacion.Value)
                 {
-                    _ultimaFechaModificacion = nuevaFechaMaxima;
+                    var iPersona = new IPersonas
+                    {
+                        Id = persona.Id,
+                        Nombre = persona.Nombre,
+                        APaterno = persona.APaterno,
+                        AMaterno = persona.AMaterno,
+                        Telefono = persona.Telefono,
+                        Correo = persona.Correo,
+                        NameTag = persona.NameTag,
+                        FModificacion = fechaPersona,
+                        FechaNacimiento = persona.FechaNacimiento,
+                        EmpresaId = persona.EmpresaId,
+                        EnUso = persona.EnUso
+                    };
+
+                    listaPersonas.Add(iPersona);
+                }
+                else
+                {
+                    _personas.TryRemove(persona.Id, out _);
+                    Console.WriteLine($"Persona {persona.Id} - {persona.Nombre} removida de memoria por fecha inferior");
                 }
             }
-            
-            Console.WriteLine($"Personas en memoria: {_personas.Count}");
-        }
-        
 
-        public Dictionary<int, Persona> ObtenerPersonas()
-        {
-            return new Dictionary<int, Persona>(_personas);
+            return listaPersonas;
         }
     }
 }
