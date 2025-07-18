@@ -21,14 +21,17 @@ namespace MiWebService.Services
         {
             Console.WriteLine("Ejecutando ArregloPersonas...");
             _timer = new System.Timers.Timer(10000);
-            _timer.Elapsed += (sender, e) =>
-            {
-                _memoriaPersonas.ArregloPersonas();
-            };
+            _timer.Elapsed += timerControl!;
             _timer.AutoReset = true;
             _timer.Start();
 
             return Task.CompletedTask;
+        }
+        private void timerControl(object sender, ElapsedEventArgs e)
+        {
+            _timer?.Stop();
+            _memoriaPersonas.ArregloPersonas();
+            _timer?.Start();
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
