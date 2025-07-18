@@ -21,7 +21,7 @@ namespace MiWebService.Controllers
 
         [HttpPost]
         [Route("GetPersonas")]
-        public List<IPersonas> GetPersonas([FromBody] FmPersona? fmG)
+        public List<PersonaResponde> GetPersonas([FromBody] FMRecibe? fmG)
         {
             DateTime? fechaModificacion = null;
 

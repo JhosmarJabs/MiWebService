@@ -34,9 +34,9 @@ namespace MiWebService.Data
             }
         }
 
-        public List<IPersonas> ObtenerPersonas(DateTime? fechaModificacion = null)
+        public List<PersonaResponde> ObtenerPersonas(DateTime? fechaModificacion = null)
         {
-            var listaPersonas = new List<IPersonas>();
+            var listaPersonas = new List<PersonaResponde>();
             var personasEnMemoria = _personas.Values.ToList();
 
             for (int i = 0; i < personasEnMemoria.Count; i++)
@@ -46,7 +46,7 @@ namespace MiWebService.Data
 
                 if (fechaModificacion == null || fechaPersona >= fechaModificacion.Value)
                 {
-                    var iPersona = new IPersonas
+                    var iPersona = new PersonaResponde
                     {
                         Id = persona.Id,
                         Nombre = persona.Nombre,

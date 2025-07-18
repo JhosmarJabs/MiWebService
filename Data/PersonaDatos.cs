@@ -81,7 +81,7 @@ namespace MiWebService.Data
             finally
             {
                 if (connection?.State != System.Data.ConnectionState.Closed)
-                    connection.Close();
+                    connection?.Close();
             }
 
             return personas;
@@ -107,15 +107,15 @@ namespace MiWebService.Data
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
-                    command.Parameters.AddWithValue("@nombre", persona.Nombre);
-                    command.Parameters.AddWithValue("@apaterno", persona.APaterno);
-                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno);
+                    command.Parameters.AddWithValue("@nombre", persona.Nombre!);
+                    command.Parameters.AddWithValue("@apaterno", persona.APaterno!);
+                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno!);
                     command.Parameters.AddWithValue("@telefono", persona.Telefono);
-                    command.Parameters.AddWithValue("@correo", persona.Correo);
-                    command.Parameters.AddWithValue("@nametag", persona.NameTag);
+                    command.Parameters.AddWithValue("@correo", persona.Correo!);
+                    command.Parameters.AddWithValue("@nametag", persona.NameTag!);
                     command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
 
-                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento);
+                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento!);
                     command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
                     var result = command.ExecuteScalar();
@@ -130,7 +130,7 @@ namespace MiWebService.Data
             finally
             {
                 if (connection?.State != System.Data.ConnectionState.Closed)
-                    connection.Close();
+                    connection?.Close();
             }
             return ID;
         }
@@ -160,15 +160,15 @@ namespace MiWebService.Data
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
                     command.Parameters.AddWithValue("@id", persona.Id);
-                    command.Parameters.AddWithValue("@nombre", persona.Nombre);
-                    command.Parameters.AddWithValue("@apaterno", persona.APaterno);
-                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno);
+                    command.Parameters.AddWithValue("@nombre", persona.Nombre!);
+                    command.Parameters.AddWithValue("@apaterno", persona.APaterno!);
+                    command.Parameters.AddWithValue("@amaterno", persona.AMaterno!);
                     command.Parameters.AddWithValue("@telefono", persona.Telefono);
-                    command.Parameters.AddWithValue("@correo", persona.Correo);
-                    command.Parameters.AddWithValue("@nametag", persona.NameTag);
+                    command.Parameters.AddWithValue("@correo", persona.Correo!);
+                    command.Parameters.AddWithValue("@nametag", persona.NameTag!);
                     command.Parameters.AddWithValue("@empresaId", persona.EmpresaId);
 
-                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento);
+                    DateTime fechaNacimiento = DateTime.Parse(persona.FechaNacimiento!);
                     command.Parameters.AddWithValue("@fechaNacimiento", fechaNacimiento.Date);
 
                     int filasAfectadas = command.ExecuteNonQuery();
@@ -183,7 +183,7 @@ namespace MiWebService.Data
             finally
             {
                 if (connection?.State != System.Data.ConnectionState.Closed)
-                    connection.Close();
+                    connection?.Close();
             }
 
             return ID;
@@ -221,7 +221,7 @@ namespace MiWebService.Data
             finally
             {
                 if (connection?.State != System.Data.ConnectionState.Closed)
-                    connection.Close();
+                    connection?.Close();
             }
             return ID;
         }
