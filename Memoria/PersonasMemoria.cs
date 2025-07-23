@@ -44,7 +44,7 @@ namespace MiWebService.Data
                 var persona = personasEnMemoria[i];
                 var fechaPersona = DateTime.Parse(persona.FModificacion);
 
-                if (fechaModificacion == null || fechaPersona >= fechaModificacion.Value)
+                if (fechaModificacion == null || fechaPersona > fechaModificacion.Value)
                 {
                     var iPersona = new PersonaResponde
                     {

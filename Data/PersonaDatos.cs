@@ -99,11 +99,11 @@ namespace MiWebService.Data
                 connection.Open();
 
                 string sql = @"INSERT INTO usuarios 
-                       (var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, var_nametag, 
-                        dt_fecha_nacimiento, dt_fecha_registro, dt_fecha_modificacion, int_empresa_id, bol_enuso)
-                       VALUES (@nombre, @apaterno, @amaterno, @telefono, @correo, @nametag, 
-                               @fechaNacimiento, CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', @empresaId, true)
-                       RETURNING int_id;";
+                            (var_nombre, var_apaterno, var_amaterno, var_telefono, var_correo, var_nametag, dt_fecha_nacimiento, dt_fecha_registro, dt_fecha_modificacion, int_empresa_id, bol_enuso)
+                        VALUES 
+                            (@nombre, @apaterno, @amaterno, @telefono, @correo, @nametag,@fechaNacimiento, CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC', @empresaId, true)
+                        RETURNING 
+                            int_id;";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
@@ -146,16 +146,17 @@ namespace MiWebService.Data
                 connection.Open();
 
                 string sql = @"UPDATE usuarios SET 
-                       var_nombre = @nombre, 
-                       var_apaterno = @apaterno,
-                       var_amaterno = @amaterno,
-                       var_telefono = @telefono,
-                       var_correo = @correo,
-                       var_nametag = @nametag,
-                       dt_fecha_nacimiento = @fechaNacimiento,
-                       int_empresa_id = @empresaId,
-                       dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
-                       WHERE int_id = @id AND bol_enuso = true;";
+                            var_nombre = @nombre, 
+                            var_apaterno = @apaterno,
+                            var_amaterno = @amaterno,
+                            var_telefono = @telefono,
+                            var_correo = @correo,
+                            var_nametag = @nametag,
+                            dt_fecha_nacimiento = @fechaNacimiento,
+                            int_empresa_id = @empresaId,
+                            dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
+                        WHERE 
+                            int_id = @id AND bol_enuso = true;";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
@@ -199,11 +200,15 @@ namespace MiWebService.Data
                 connection = new NpgsqlConnection(_connectionString);
                 connection.Open();
 
-                string sql = @"UPDATE usuarios SET 
-                               bol_enuso = false,
-                               dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
-                               WHERE int_id = @id AND bol_enuso = true
-                               RETURNING int_id;";
+                string sql = @"UPDATE 
+                            usuarios     
+                        SET 
+                            bol_enuso = false,
+                            dt_fecha_modificacion = CURRENT_TIMESTAMP(3) AT TIME ZONE 'UTC'
+                        WHERE 
+                            int_id = @id AND bol_enuso = true
+                        RETURNING 
+                            int_id;";
 
                 using (var command = new NpgsqlCommand(sql, connection))
                 {
